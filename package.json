@@ -1,0 +1,15 @@
+{
+  "name": "astral-system",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "create-client": "node tools/create-client/src/index.mjs"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0"
+  },
+  "packageManager": "pnpm@10.6.0"
+}

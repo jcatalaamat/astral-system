@@ -1,0 +1,3 @@
+{
+  "extends": "@astral/typescript-config/library.json"
+}

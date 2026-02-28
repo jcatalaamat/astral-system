@@ -1,0 +1,9 @@
+{
+  "name": "@astral/tailwind-config",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./preset.css": "./preset.css",
+    "./base.css": "./base.css"
+  }
+}

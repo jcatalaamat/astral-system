@@ -1,0 +1,17 @@
+{
+  "name": "@astral/sanity-utils",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "files": ["src"],
+  "dependencies": {
+    "@sanity/client": "^7.14.1",
+    "@sanity/image-url": "^2.0.3"
+  },
+  "peerDependencies": { "next-sanity": ">=12" },
+  "devDependencies": {
+    "@astral/typescript-config": "workspace:*",
+    "typescript": "^5"
+  }
+}

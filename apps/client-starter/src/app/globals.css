@@ -1,0 +1,31 @@
+@import "tailwindcss";
+@import "@astral/tailwind-config/preset.css";
+@import "@astral/tailwind-config/base.css";
+
+/* {{CLIENT_NAME}} — Brand Colors */
+:root {
+  /* Semantic Variables (customize these for your brand) */
+  --primary: {{PRIMARY_COLOR}};
+  --primary-hover: {{PRIMARY_HOVER}};
+  --secondary: {{SECONDARY_COLOR}};
+  --secondary-hover: {{SECONDARY_HOVER}};
+  --accent: {{ACCENT_COLOR}};
+  --accent-hover: {{ACCENT_HOVER}};
+  --background: {{BACKGROUND}};
+  --background-alt: #FFFFFF;
+  --foreground: {{FOREGROUND}};
+  --foreground-muted: {{FOREGROUND_MUTED}};
+  --muted: {{MUTED}};
+  --muted-light: {{MUTED_LIGHT}};
+  --surface: #FFFFFF;
+  --surface-alt: {{BACKGROUND}};
+
+  /* Typography */
+  --font-heading: {{FONT_HEADING}};
+  --font-body: {{FONT_BODY}};
+
+  /* Spacing */
+  --section-padding: clamp(4rem, 8vw, 8rem);
+  --container-max: 1280px;
+  --container-padding: clamp(1rem, 4vw, 2rem);
+}
