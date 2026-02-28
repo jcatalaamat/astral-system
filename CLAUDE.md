@@ -1,98 +1,101 @@
 # Astral System
 
-Monorepo for building client websites. Any type — wellness, restaurants, portfolios, agencies, e-commerce, landing pages.
+Monorepo for building client websites. Any type.
 
-The user works from a phone. Be autonomous. Just build. Only ask when truly ambiguous.
+## Rules
+
+1. **Before building anything, read what exists.** Look at `apps/` for existing sites, `packages/ui/src/` for components, `packages/types/src/` for interfaces. Never build what already exists.
+2. **sacred-counsel is the reference.** When unsure how to structure something, check `apps/sacred-counsel/`. Copy its patterns.
+3. **Reuse shared packages.** Import from `@astral/ui`, `@astral/types`, `@astral/seo`, etc. Never duplicate shared components into a client app.
+4. **If you build something reusable, move it to a shared package.** Built a booking component? Put it in `packages/booking/`. Built a contact form? Put it in `packages/ui/`. Next client gets it for free.
+5. **One site = one folder in `apps/`.** Each with its own git repo. Never mix client code.
+6. **Don't add tech until needed.** No Sanity unless they need a CMS. No Stripe unless they need payments. No Supabase unless they need a database.
+7. **User is on a phone.** Be concise. Don't list options. Pick the best approach and do it. Only ask when genuinely ambiguous.
+8. **Commit early, commit often.** Small commits. Push after each meaningful change.
+9. **Don't break other sites.** Only run/build the site you're working on. Use `--filter`.
+10. **When stuck or running out of context, commit WIP + write TODO.md.** User will say "continue" next session.
+
+## Before You Start Any New Site
+
+```
+# 1. Read existing components
+ls packages/ui/src/primitives/   # Button, Card, Input, Badge, Accordion, Carousel
+ls packages/ui/src/sections/     # Hero, CTA, FAQ, Testimonials, Pricing, Team, Newsletter, AmenityGrid
+ls packages/ui/src/layout/       # Header, Footer
+
+# 2. Read the reference site
+ls apps/sacred-counsel/src/      # See how a complete site is structured
+cat apps/sacred-counsel/src/lib/constants.ts   # See how data is organized
+cat apps/sacred-counsel/src/app/page.tsx        # See how pages compose sections
+
+# 3. Check what types exist
+cat packages/types/src/index.ts  # SiteConfig, Testimonial, FAQ, TeamMember, etc.
+
+# 4. Check other client sites for patterns you can copy
+ls apps/
+```
+
+Do this EVERY time. Don't guess what exists — look.
 
 ## Architecture
 
 ```
 astral-system/
-├── packages/              ← shared, reuse always
-│   ├── ui                 ← Button, Card, Hero, CTA, FAQ, Team, etc.
+├── packages/              ← shared code, reuse always
+│   ├── ui                 ← components (primitives, sections, layout)
 │   ├── types              ← TypeScript interfaces
-│   ├── sanity-schemas     ← CMS document schemas
-│   ├── sanity-utils       ← Sanity client + GROQ queries
+│   ├── sanity-schemas     ← CMS schemas (when needed)
+│   ├── sanity-utils       ← Sanity client + queries (when needed)
 │   ├── seo                ← Schema.org structured data
-│   ├── config-typescript  ← shared tsconfig
-│   ├── config-eslint      ← ESLint 9 flat config
-│   └── config-tailwind    ← Tailwind preset + base CSS
-├── apps/                  ← one folder per client
-│   ├── client-starter     ← template (copy this for new sites)
-│   └── sacred-counsel     ← reference implementation
+│   └── config-*           ← shared tsconfig, eslint, tailwind
+├── apps/                  ← one folder per client site
+│   ├── client-starter     ← template (copy for new sites)
+│   ├── sacred-counsel     ← reference implementation
+│   └── <new-client>/      ← your new site goes here
 └── tools/
     └── create-client      ← scaffold wizard
 ```
 
-## Tech Stack (same for everything)
+## Tech Stack
 
-- Next.js 16 (App Router) + TypeScript 5 (strict) + Tailwind CSS 4
+- Next.js 16 (App Router) + TypeScript 5 + Tailwind CSS 4
 - pnpm + Turborepo
-- CMS: Sanity v5 (only when client needs it)
-- Payments: Stripe (only when client needs it)
-- Auth: NextAuth (only when client needs it)
-- DB: Supabase (only for complex sites with user data)
-- Deploy: pm2 on this Mac, self-hosted via Tailscale
+- Add only when needed: Sanity (CMS), Stripe (payments), NextAuth (auth), Supabase (DB)
+- Deploy: pm2, self-hosted via Tailscale
 
-Don't add tools unless a real client needs them.
+## Creating a New Site
 
-## Creating a New Client Site
-
-1. Copy the template:
+1. `cp -r apps/client-starter apps/<slug>`
+2. Replace `@astral/{{SLUG}}` with `@astral/<slug>` in package.json
+3. Fill in `src/lib/config.ts` (site name, nav, footer)
+4. Set brand colors in `src/app/globals.css`
+5. Set fonts in `src/app/layout.tsx`
+6. No CMS? Remove `@sanity/*` and `next-sanity` from package.json
+7. `cd ~/projects/astral-system && pnpm install`
+8. Init git:
    ```bash
-   cp -r apps/client-starter apps/<slug>
-   ```
-
-2. In `apps/<slug>/package.json`: replace `@astral/{{SLUG}}` with `@astral/<slug>`
-
-3. In `apps/<slug>/src/lib/config.ts`: fill in SITE_CONFIG, NAV_LINKS, FOOTER_COLUMNS
-
-4. In `apps/<slug>/src/app/globals.css`: set brand colors as CSS variables
-
-5. In `apps/<slug>/src/app/layout.tsx`: set fonts and metadata
-
-6. If no CMS needed: remove all `@sanity/*` and `next-sanity` from package.json
-
-7. Install: `cd ~/projects/astral-system && pnpm install`
-
-8. Init client git repo:
-   ```bash
-   cd apps/<slug>
-   git init
+   cd apps/<slug> && git init
    gh repo create <slug> --public --source=. --push
    ```
 
-## Git Strategy
+## Git
 
-- The monorepo `astral-system/` has its own git repo (tracks packages, configs, tools)
-- Each client `apps/<slug>/` gets its own separate git repo inside it
-- Add `apps/*/` to the monorepo's `.gitignore` so client repos stay independent
-- This way: shared code is versioned together, client code is versioned separately
-
-When creating a new client:
-1. Build the site in `apps/<slug>/`
-2. `git init` inside `apps/<slug>/`
-3. `gh repo create <slug> --public --source=. --push`
-4. Commit to the client repo as you work
-
-When updating shared packages:
-1. Make changes in `packages/`
-2. Commit to the monorepo repo
-3. Rebuild affected client sites
+- `astral-system/` = monorepo repo (packages, configs, tools, template)
+- `apps/<slug>/` = each client has its own repo
+- `apps/*/` is in monorepo `.gitignore` — client repos are independent
+- When you change a shared package, commit to monorepo repo
+- When you change a client site, commit to that client's repo
 
 ## Development
 
 ```bash
-pnpm dev --filter @astral/<slug>          # dev one site
-pnpm build --filter @astral/<slug>        # build one site
-PORT=3005 pnpm dev --filter @astral/<slug> # dev on specific port
+pnpm dev --filter @astral/<slug>    # run ONLY this site
+pnpm build --filter @astral/<slug>  # build ONLY this site
 ```
 
-Only the site you're working on runs. Other deployed sites are untouched.
+Never run `pnpm dev` without `--filter`. Never touch other sites.
 
 ## Deploy
-
-All sites self-hosted on this Mac via Tailscale at http://100.64.86.7:<port>.
 
 ```bash
 pnpm build --filter @astral/<slug>
@@ -100,67 +103,34 @@ PORT=<port> pm2 start apps/<slug>/node_modules/.bin/next --name "<slug>" -- star
 pm2 save
 ```
 
-Check what's running: `pm2 list`
-Next available port: check `pm2 list` and pick the next one after 3001.
+- Ports start from 3001. Check `pm2 list` for next available.
+- After deploy, report: "Running at http://100.64.86.7:<port>"
 
-After deploying, always report: "Running at http://100.64.86.7:<port>"
+## Shared vs Custom
 
-## When to Use Shared Packages vs Build New
-
-| Need | Use shared | Build in client app |
-|---|---|---|
-| Button, Card, Input, Badge | @astral/ui | Never rebuild these |
-| Hero, CTA, FAQ, Testimonials, Team | @astral/ui sections | Never rebuild these |
-| Header, Footer | @astral/ui layout | Never rebuild these |
-| Blog/FAQ/Team CMS schemas | @astral/sanity-schemas | Never redefine |
-| GROQ queries | @astral/sanity-utils | Never write inline |
-| SEO structured data | @astral/seo | Never do manual JSON-LD |
-| Client-specific sections | — | apps/<slug>/src/components/ |
-| Client data/content | — | apps/<slug>/src/lib/config.ts |
-
-**If you build something that could work for other clients, add it to a shared package.**
-
-## Site Type Handling
-
-- **Brochure/landing page**: Hero + CTA + maybe testimonials. No DB, no CMS. Just constants.ts.
-- **Wellness/retreat**: Full template — Hero, Team, FAQ, Testimonials, Pricing, Newsletter.
-- **Restaurant**: Hero + custom menu component + contact. Build menu component in client app.
-- **Portfolio**: Hero + project grid. Minimal.
-- **Agency**: Hero + services + team + testimonials + CTA.
-- **With booking**: Add when first client needs it → build `packages/booking/`, reuse forever.
-- **With payments**: Add Stripe when needed → build `packages/payments/`, reuse forever.
-
-Always start from shared components. Only build custom when @astral/ui doesn't have it.
-
-## CSS Variable Contract
-
-Each client sets these in `globals.css`:
-
-| Variable | Purpose |
+| If it exists in packages/ | Use it |
 |---|---|
-| `--primary` / `--primary-hover` | Main brand color |
-| `--secondary` / `--secondary-hover` | Secondary brand color |
-| `--accent` / `--accent-hover` | Accent/highlight |
-| `--background` / `--background-alt` | Page backgrounds |
-| `--foreground` / `--foreground-muted` | Text colors |
-| `--muted` / `--muted-light` | Subtle elements |
-| `--surface` / `--surface-alt` | Card/section backgrounds |
-| `--font-heading` | Heading font |
-| `--font-body` | Body font |
+| Button, Card, Input, Badge, Accordion, Carousel | `@astral/ui` primitives |
+| Hero, CTA, FAQ, Testimonials, Pricing, Team, Newsletter | `@astral/ui` sections |
+| Header, Footer | `@astral/ui` layout |
+| SiteConfig, Testimonial, FAQ, TeamMember, BlogPost | `@astral/types` |
+| SEO schemas | `@astral/seo` |
+| Sanity document schemas | `@astral/sanity-schemas` |
+
+| If it doesn't exist | Build it |
+|---|---|
+| Client-specific sections | `apps/<slug>/src/components/` |
+| Client content/data | `apps/<slug>/src/lib/config.ts` |
+| Something reusable? | Build it, then move to `packages/` |
+
+## CSS Variables (each client sets in globals.css)
+
+`--primary`, `--primary-hover`, `--secondary`, `--secondary-hover`, `--accent`, `--accent-hover`, `--background`, `--background-alt`, `--foreground`, `--foreground-muted`, `--muted`, `--muted-light`, `--surface`, `--surface-alt`, `--font-heading`, `--font-body`
 
 ## Conventions
 
 - Named exports, no default exports
-- Functional components only
-- Barrel exports from each package (index.ts)
-- Components accept data via props — never hardcode content
-- Client data lives in `apps/<slug>/src/lib/config.ts`
-- No unnecessary comments
-- Commit early, commit often
-
-## If You Can't Finish
-
-1. Commit everything: `git add -A && git commit -m "wip: <what was done>"`
-2. Push to GitHub
-3. Write `TODO.md` in the client app listing what's left
-4. User will say "continue" in a new session — read TODO.md and resume
+- Functional components, no classes
+- Props for data, never hardcode content
+- Client data in `config.ts`, not in components
+- Barrel exports from packages (`index.ts`)
